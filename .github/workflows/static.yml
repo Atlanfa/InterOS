@@ -1,5 +1,5 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Simple workflow for deploying InterOS to GitHub Pages
+name: Deploy InterOS to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -31,13 +31,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      - name: Prepare InterOS for Deployment
+        # Переименовываем InterOS.html в index.html, чтобы он служил главной страницей.
+        # Это предполагает, что файл InterOS.html находится в корне ветки main.
+        run: mv InterOS.html index.html
+        
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Загружаем содержимое репозитория, где теперь есть index.html
+          path: '.' 
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
