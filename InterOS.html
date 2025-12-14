@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InterOS</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react-draggable@4.4.5/build/web/react-draggable.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      background: #008080;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .desktop {
+      width: 100%;
+      height: calc(100vh - 40px);
+      position: relative;
+      padding: 10px;
+    }
+
+    .desktop-icon {
+      width: 80px;
+      text-align: center;
+      cursor: pointer;
+      margin: 10px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .desktop-icon-image {
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 5px;
+      background: #c0c0c0;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .desktop-icon-label {
+      background: #fff;
+      color: #000;
+      padding: 2px 4px;
+      font-size: 11px;
+      word-wrap: break-word;
+    }
+
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      z-index: 10000;
+    }
+
+    .start-button {
+      height: 32px;
+      padding: 0 20px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .start-button:active {
+      border-style: inset;
+    }
+
+    .start-button.active {
+      border-style: inset;
+    }
+
+    .taskbar-buttons {
+      display: flex;
+      gap: 2px;
+      margin-left: 10px;
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .taskbar-button {
+      height: 32px;
+      padding: 0 10px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .taskbar-button.active {
+      border-style: inset;
+    }
+
+    .taskbar-button:active {
+      border-style: inset;
+    }
+
+    .clock {
+      height: 32px;
+      padding: 0 10px;
+      background: #c0c0c0;
+      border: 2px inset #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .window {
+      position: absolute;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      min-width: 300px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .window-titlebar {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: #fff;
+      padding: 3px 5px;
+      font-weight: bold;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+    }
+
+    .window-titlebar.inactive {
+      background: linear-gradient(to right, #808080, #a0a0a0);
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 2px;
+    }
+
+    .window-button {
+      width: 18px;
+      height: 18px;
+      background: #c0c0c0;
+      border: 1px outset #fff;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .window-button:active {
+      border-style: inset;
+    }
+
+    .window-content {
+      flex: 1;
+      background: #fff;
+      border: 2px inset #fff;
+      margin: 2px;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .start-menu {
+      position: fixed;
+      bottom: 42px;
+      left: 2px;
+      width: 250px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      z-index: 9999;
+    }
+
+    .start-menu-header {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: #fff;
+      padding: 5px 10px;
+      font-weight: bold;
+      transform: rotate(0deg);
+      writing-mode: horizontal-tb;
+    }
+
+    .start-menu-item {
+      padding: 8px 30px 8px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .start-menu-item:hover {
+      background: #000080;
+      color: #fff;
+    }
+
+    .login-screen {
+      width: 100vw;
+      height: 100vh;
+      background: #008080;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      padding: 20px;
+      width: 400px;
+    }
+
+    .login-title {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: #fff;
+      padding: 5px 10px;
+      font-weight: bold;
+      margin: -20px -20px 20px -20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 5px;
+      border: 2px inset #fff;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    .button {
+      padding: 5px 20px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+    }
+
+    .button:active {
+      border-style: inset;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 100px);
+      gap: 20px;
+      padding: 10px;
+    }
+
+    .app-item {
+      text-align: center;
+      cursor: pointer;
+      padding: 10px;
+    }
+
+    .app-item:hover {
+      background: rgba(0, 0, 255, 0.1);
+    }
+
+    .app-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 8px;
+      background: #c0c0c0;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .app-name {
+      font-size: 11px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const Draggable = window.ReactDraggable;
+
+    // Storage utilities
+    const STORAGE_KEY = 'os_installed_apps';
+    
+    const getApps = () => {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    };
+    
+    const saveApps = (apps) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+    };
+
+    // Login Screen
+    function LoginScreen({ onLogin }) {
+      const [username, setUsername] = useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (username.trim()) {
+          onLogin(username);
+        }
+      };
+      
+      return (
+        <div className="login-screen">
+          <div className="login-box">
+            <div className="login-title">Welcome to InterOS</div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>User name:</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="button-group">
+                <button type="submit" className="button">OK</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // Desktop Icon Component
+    function DesktopIcon({ icon, label, onDoubleClick }) {
+      return (
+        <div className="desktop-icon" onDoubleClick={onDoubleClick}>
+          <div className="desktop-icon-image">{icon}</div>
+          <div className="desktop-icon-label">{label}</div>
+        </div>
+      );
+    }
+
+    // Window Component
+    function WindowFrame({ window, isActive, onClose, onFocus, onMinimize, children }) {
+      const nodeRef = useRef(null);
+      
+      return (
+        <Draggable
+          handle=".window-titlebar"
+          nodeRef={nodeRef}
+          defaultPosition={{ x: window.x || 100, y: window.y || 100 }}
+        >
+          <div
+            ref={nodeRef}
+            className="window"
+            style={{
+              zIndex: isActive ? 1000 : window.zIndex || 1,
+              width: window.width || 600,
+              height: window.height || 400,
+              display: window.minimized ? 'none' : 'flex'
+            }}
+            onMouseDown={onFocus}
+          >
+            <div className={`window-titlebar ${!isActive ? 'inactive' : ''}`}>
+              <span>{window.title}</span>
+              <div className="window-controls">
+                <div className="window-button" onClick={onMinimize}>_</div>
+                <div className="window-button" onClick={onClose}>×</div>
+              </div>
+            </div>
+            <div className="window-content">
+              {children}
+            </div>
+          </div>
+        </Draggable>
+      );
+    }
+
+    // Browser App (Installer)
+    function BrowserApp() {
+      const [name, setName] = useState('');
+      const [url, setUrl] = useState('');
+      const [installType, setInstallType] = useState('url'); // 'url' or 'file'
+      const [apps, setApps] = useState(getApps());
+      const fileInputRef = useRef(null);
+      
+      const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'text/html') {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const content = event.target.result;
+            const newApp = {
+              id: Date.now().toString(),
+              title: name || file.name.replace('.html', ''),
+              content: content,
+              type: 'local',
+              icon: '📄'
+            };
+            const updatedApps = [...apps, newApp];
+            setApps(updatedApps);
+            saveApps(updatedApps);
+            setName('');
+            alert('Local HTML file installed successfully!');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          };
+          reader.readAsText(file);
+        } else {
+          alert('Please select an HTML file');
+        }
+      };
+      
+      const handleInstall = (e) => {
+        e.preventDefault();
+        if (name && url) {
+          const newApp = {
+            id: Date.now().toString(),
+            title: name,
+            url: url,
+            type: 'url',
+            icon: '🌐'
+          };
+          const updatedApps = [...apps, newApp];
+          setApps(updatedApps);
+          saveApps(updatedApps);
+          setName('');
+          setUrl('');
+          alert('Application installed successfully!');
+        }
+      };
+      
+      return (
+        <div style={{ padding: '20px' }}>
+          <h2 style={{ marginBottom: '20px' }}>Install New Application</h2>
+          
+          <div style={{ marginBottom: '20px', padding: '10px', background: '#f0f0f0', border: '2px inset #fff' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ marginRight: '20px' }}>
+                <input 
+                  type="radio" 
+                  value="url" 
+                  checked={installType === 'url'} 
+                  onChange={(e) => setInstallType(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                Install from URL
+              </label>
+              <label>
+                <input 
+                  type="radio" 
+                  value="file" 
+                  checked={installType === 'file'} 
+                  onChange={(e) => setInstallType(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                Install from Local File
+              </label>
+            </div>
+          </div>
+
+          {installType === 'url' ? (
+            <form onSubmit={handleInstall}>
+              <div className="form-group">
+                <label>Application Name:</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Google"
+                />
+              </div>
+              <div className="form-group">
+                <label>URL:</label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div className="button-group">
+                <button type="submit" className="button">Install from URL</button>
+              </div>
+            </form>
+          ) : (
+            <div>
+              <div className="form-group">
+                <label>Application Name (optional):</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Leave blank to use filename"
+                />
+              </div>
+              <div className="form-group">
+                <label>Select HTML File:</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".html,.htm"
+                  onChange={handleFileSelect}
+                  style={{ padding: '5px', border: '2px inset #fff', width: '100%', background: '#fff' }}
+                />
+              </div>
+              <div style={{ marginTop: '10px', padding: '10px', background: '#ffffcc', border: '1px solid #ccc', fontSize: '11px' }}>
+                📝 <strong>Note:</strong> Select an HTML file from your computer. The file will be stored locally and can be run offline.
+              </div>
+            </div>
+          )}
+          
+          <div style={{ marginTop: '30px' }}>
+            <h3>Installed Apps ({apps.length})</h3>
+            <div style={{ marginTop: '10px' }}>
+              {apps.map(app => (
+                <div key={app.id} style={{ padding: '5px', borderBottom: '1px solid #ccc' }}>
+                  {app.icon} {app.title} {app.type === 'local' && <span style={{ fontSize: '10px', color: '#666' }}>(Local)</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Explorer App (Library)
+    function ExplorerApp({ onOpenApp }) {
+      const [apps, setApps] = useState(getApps());
+      
+      const handleDelete = (id) => {
+        if (confirm('Delete this application?')) {
+          const updatedApps = apps.filter(app => app.id !== id);
+          setApps(updatedApps);
+          saveApps(updatedApps);
+        }
+      };
+      
+      const handleDownload = (app) => {
+        if (app.type === 'local' && app.content) {
+          // Download local HTML file
+          const blob = new Blob([app.content], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${app.title}.html`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } else if (app.type === 'url') {
+          // Create a simple HTML wrapper for URL-based apps
+          const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${app.title}</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe src="${app.url}" title="${app.title}"></iframe>
+</body>
+</html>`;
+          const blob = new Blob([htmlContent], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${app.title}.html`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      };
+      
+      return (
+        <div>
+          <div style={{ padding: '10px', background: '#c0c0c0', borderBottom: '2px solid #fff' }}>
+            <strong>My Applications</strong>
+          </div>
+          {apps.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+              No applications installed. Use Browser to install apps.
+            </div>
+          ) : (
+            <div className="app-grid">
+              {apps.map(app => (
+                <div key={app.id} className="app-item">
+                  <div onDoubleClick={() => onOpenApp(app)}>
+                    <div className="app-icon">{app.icon}</div>
+                    <div className="app-name">{app.title}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '5px', marginTop: '5px', justifyContent: 'center' }}>
+                    <button 
+                      className="button" 
+                      style={{ fontSize: '10px', padding: '2px 8px' }}
+                      onClick={() => handleDownload(app)}
+                      title="Download to computer"
+                    >
+                      💾
+                    </button>
+                    <button 
+                      className="button" 
+                      style={{ fontSize: '10px', padding: '2px 8px' }}
+                      onClick={() => handleDelete(app.id)}
+                      title="Delete from OS"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Webview App
+    function WebviewApp({ url, content }) {
+      if (content) {
+        // Local HTML content
+        return (
+          <iframe 
+            srcDoc={content} 
+            title="Local Application"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+          />
+        );
+      }
+      // Remote URL
+      return <iframe src={url} title="Web Application" />;
+    }
+
+    // Main OS Component
+    function OS() {
+      const [loggedIn, setLoggedIn] = useState(false);
+      const [username, setUsername] = useState('');
+      const [windows, setWindows] = useState([]);
+      const [activeWindowId, setActiveWindowId] = useState(null);
+      const [startMenuOpen, setStartMenuOpen] = useState(false);
+      const [time, setTime] = useState(new Date());
+      
+      useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+      
+      // Listen for resize messages from apps
+      useEffect(() => {
+        const handleMessage = (event) => {
+          if (event.data.type === 'resize-window') {
+            // Find the window that sent the message
+            const sourceWindow = windows.find(w => w.id === activeWindowId);
+            if (sourceWindow) {
+              setWindows(windows.map(w => 
+                w.id === activeWindowId 
+                  ? { ...w, width: event.data.width, height: event.data.height }
+                  : w
+              ));
+            }
+          } else if (event.data.type === 'get-window-size') {
+            // Send current window size back to requesting app
+            const currentWindow = windows.find(w => w.id === activeWindowId);
+            if (currentWindow) {
+              event.source.postMessage({
+                type: 'window-size-update',
+                width: currentWindow.width || 600,
+                height: currentWindow.height || 400
+              }, '*');
+            }
+          } else if (event.data.type === 'bulk-install-apps') {
+            // Handle bulk app installation
+            const currentApps = getApps();
+            const newApps = event.data.apps.map(app => ({
+              ...app,
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+            }));
+            const updatedApps = [...currentApps, ...newApps];
+            saveApps(updatedApps);
+            
+            // Send confirmation back
+            event.source.postMessage({
+              type: 'apps-installed',
+              count: newApps.length
+            }, '*');
+            
+            alert(`Successfully installed ${newApps.length} app(s)!\n\nCheck File Explorer to see them.`);
+          }
+        };
+        
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+      }, [windows, activeWindowId]);
+      
+      const openWindow = (appType, appData = {}) => {
+        const existingWindow = windows.find(w => w.appType === appType && w.appData?.id === appData.id);
+        
+        if (existingWindow) {
+          setActiveWindowId(existingWindow.id);
+          setWindows(windows.map(w => 
+            w.id === existingWindow.id ? { ...w, minimized: false } : w
+          ));
+        } else {
+          const newWindow = {
+            id: Date.now().toString(),
+            appType,
+            appData,
+            title: appData.title || (appType === 'browser' ? 'Browser' : appType === 'explorer' ? 'File Explorer' : 'Application'),
+            x: 50 + windows.length * 30,
+            y: 50 + windows.length * 30,
+            width: appType === 'webview' ? 800 : 600,
+            height: appType === 'webview' ? 600 : 400,
+            minimized: false,
+            zIndex: 1
+          };
+          setWindows([...windows, newWindow]);
+          setActiveWindowId(newWindow.id);
+        }
+        setStartMenuOpen(false);
+      };
+      
+      const closeWindow = (id) => {
+        setWindows(windows.filter(w => w.id !== id));
+        if (activeWindowId === id) {
+          setActiveWindowId(null);
+        }
+      };
+      
+      const minimizeWindow = (id) => {
+        setWindows(windows.map(w => 
+          w.id === id ? { ...w, minimized: true } : w
+        ));
+        if (activeWindowId === id) {
+          setActiveWindowId(null);
+        }
+      };
+      
+      const focusWindow = (id) => {
+        setActiveWindowId(id);
+        setWindows(windows.map(w => 
+          w.id === id ? { ...w, minimized: false } : w
+        ));
+      };
+      
+      const renderWindowContent = (window) => {
+        switch (window.appType) {
+          case 'browser':
+            return <BrowserApp />;
+          case 'explorer':
+            return <ExplorerApp onOpenApp={(app) => openWindow('webview', app)} />;
+          case 'webview':
+            return <WebviewApp url={window.appData.url} content={window.appData.content} />;
+          default:
+            return <div>Unknown application</div>;
+        }
+      };
+      
+      if (!loggedIn) {
+        return <LoginScreen onLogin={(name) => { setUsername(name); setLoggedIn(true); }} />;
+      }
+      
+      return (
+        <div>
+          <div className="desktop">
+            <DesktopIcon
+              icon="🌐"
+              label="Browser"
+              onDoubleClick={() => openWindow('browser')}
+            />
+            <DesktopIcon
+              icon="📁"
+              label="File Explorer"
+              onDoubleClick={() => openWindow('explorer')}
+            />
+            
+            {windows.map(window => (
+              <WindowFrame
+                key={window.id}
+                window={window}
+                isActive={activeWindowId === window.id}
+                onClose={() => closeWindow(window.id)}
+                onFocus={() => focusWindow(window.id)}
+                onMinimize={() => minimizeWindow(window.id)}
+              >
+                {renderWindowContent(window)}
+              </WindowFrame>
+            ))}
+          </div>
+          
+          <div className="taskbar">
+            <div
+              className={`start-button ${startMenuOpen ? 'active' : ''}`}
+              onClick={() => setStartMenuOpen(!startMenuOpen)}
+            >
+              <span style={{ fontSize: '16px' }}>⊞</span>
+              <span>Start</span>
+            </div>
+            
+            <div className="taskbar-buttons">
+              {windows.filter(w => !w.minimized).map(window => (
+                <div
+                  key={window.id}
+                  className={`taskbar-button ${activeWindowId === window.id ? 'active' : ''}`}
+                  onClick={() => focusWindow(window.id)}
+                >
+                  {window.title}
+                </div>
+              ))}
+            </div>
+            
+            <div className="clock">
+              {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+          
+          {startMenuOpen && (
+            <div className="start-menu">
+              <div className="start-menu-header">InterOS</div>
+              <div className="start-menu-item" onClick={() => openWindow('browser')}>
+                🌐 Browser (Install Apps)
+              </div>
+              <div className="start-menu-item" onClick={() => openWindow('explorer')}>
+                📁 File Explorer
+              </div>
+              <div className="start-menu-item" onClick={() => { setLoggedIn(false); setWindows([]); setStartMenuOpen(false); }}>
+                🚪 Log Off {username}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Render
+    ReactDOM.render(<OS />, document.getElementById('root'));
+  </script>
+</body>
+</html>

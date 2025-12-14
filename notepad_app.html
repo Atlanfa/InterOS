@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notepad</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      background: #c0c0c0;
+      color: #000;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .menubar {
+      background: #c0c0c0;
+      border-bottom: 2px solid #808080;
+      display: flex;
+      padding: 2px;
+    }
+
+    .menu-item {
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      position: relative;
+    }
+
+    .menu-item:hover {
+      background: #000080;
+      color: #fff;
+    }
+
+    .menu-item.active {
+      background: #000080;
+      color: #fff;
+    }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      z-index: 1000;
+      min-width: 150px;
+    }
+
+    .dropdown.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 6px 30px 6px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      white-space: nowrap;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropdown-item:hover {
+      background: #000080;
+      color: #fff;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #808080;
+      margin: 2px 0;
+    }
+
+    .shortcut {
+      font-size: 10px;
+      color: #666;
+      margin-left: 20px;
+    }
+
+    .dropdown-item:hover .shortcut {
+      color: #fff;
+    }
+
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 2px inset #808080;
+      margin: 2px;
+      overflow: hidden;
+    }
+
+    .editor {
+      flex: 1;
+      padding: 5px;
+      border: none;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      resize: none;
+      outline: none;
+      background: #fff;
+      color: #000;
+      line-height: 1.5;
+    }
+
+    .status-bar {
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      padding: 3px 8px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .status-item {
+      padding: 0 10px;
+      border-left: 2px inset #808080;
+    }
+
+    .status-item:first-child {
+      border-left: none;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+      min-width: 300px;
+      max-width: 500px;
+    }
+
+    .modal-title {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: #fff;
+      padding: 4px 8px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .modal-content {
+      padding: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 5px 20px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      cursor: pointer;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+    }
+
+    .button:active {
+      border-style: inset;
+    }
+
+    .button:hover {
+      background: #d4d4d4;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 11px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 4px;
+      border: 2px inset #808080;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .info-text {
+      font-size: 11px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .file-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 2px inset #808080;
+      background: #fff;
+      margin-top: 10px;
+    }
+
+    .file-item {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .file-item:hover {
+      background: #000080;
+      color: #fff;
+    }
+
+    .file-item-name {
+      flex: 1;
+    }
+
+    .file-item-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .file-item-btn {
+      padding: 2px 8px;
+      background: #c0c0c0;
+      border: 1px outset #fff;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .file-item:hover .file-item-btn {
+      background: #d0d0d0;
+    }
+  </style>
+</head>
+<body>
+  <div class="menubar">
+    <div class="menu-item" onclick="toggleMenu('fileMenu', this)">
+      File
+      <div class="dropdown" id="fileMenu">
+        <div class="dropdown-item" onclick="newFile()">
+          New <span class="shortcut">Ctrl+N</span>
+        </div>
+        <div class="dropdown-item" onclick="openFromComputer()">
+          Open from Computer... <span class="shortcut">Ctrl+O</span>
+        </div>
+        <div class="dropdown-item" onclick="openFromStorage()">
+          Open from Storage...
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="saveToStorage()">
+          Save to Storage <span class="shortcut">Ctrl+S</span>
+        </div>
+        <div class="dropdown-item" onclick="saveToStorageAs()">
+          Save to Storage As...
+        </div>
+        <div class="dropdown-item" onclick="downloadFile()">
+          Download to Computer
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="showAbout()">
+          About
+        </div>
+      </div>
+    </div>
+    
+    <div class="menu-item" onclick="toggleMenu('editMenu', this)">
+      Edit
+      <div class="dropdown" id="editMenu">
+        <div class="dropdown-item" onclick="undo()">
+          Undo <span class="shortcut">Ctrl+Z</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="selectAll()">
+          Select All <span class="shortcut">Ctrl+A</span>
+        </div>
+        <div class="dropdown-item" onclick="copyText()">
+          Copy <span class="shortcut">Ctrl+C</span>
+        </div>
+        <div class="dropdown-item" onclick="cutText()">
+          Cut <span class="shortcut">Ctrl+X</span>
+        </div>
+        <div class="dropdown-item" onclick="pasteText()">
+          Paste <span class="shortcut">Ctrl+V</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="clearAll()">
+          Clear All
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleMenu('viewMenu', this)">
+      View
+      <div class="dropdown" id="viewMenu">
+        <div class="dropdown-item" onclick="toggleWordWrap()">
+          Word Wrap
+        </div>
+        <div class="dropdown-item" onclick="increaseFontSize()">
+          Increase Font <span class="shortcut">Ctrl++</span>
+        </div>
+        <div class="dropdown-item" onclick="decreaseFontSize()">
+          Decrease Font <span class="shortcut">Ctrl+-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-container">
+    <textarea class="editor" id="editor" placeholder="Start typing..."></textarea>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item" id="filename">Untitled</div>
+    <div class="status-item" id="charCount">0 characters</div>
+    <div class="status-item" id="lineCount">1 line</div>
+    <div class="status-item" id="modified"></div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept=".txt" class="hidden" onchange="handleFileOpen(event)">
+
+  <!-- Save As Modal -->
+  <div class="modal-overlay" id="saveAsModal">
+    <div class="modal">
+      <div class="modal-title">Save As</div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label>File Name:</label>
+          <input type="text" id="saveFilename" value="untitled.txt">
+        </div>
+        <div class="modal-buttons">
+          <button class="button" onclick="closeSaveAsModal()">Cancel</button>
+          <button class="button" onclick="confirmSaveAs()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal">
+      <div class="modal-title">About Notepad</div>
+      <div class="modal-content">
+        <div class="info-text">
+          <strong>Notepad for InterOS</strong><br>
+          Version 1.0<br><br>
+          A simple text editor for creating and editing text files.<br><br>
+          Features:<br>
+          • Open and save .txt files<br>
+          • Save files to browser storage<br>
+          • Word wrap toggle<br>
+          • Font size adjustment<br>
+          • Character and line count<br>
+          • Keyboard shortcuts
+        </div>
+        <div class="modal-buttons">
+          <button class="button" onclick="closeAbout()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open from Storage Modal -->
+  <div class="modal-overlay" id="openStorageModal">
+    <div class="modal">
+      <div class="modal-title">Open from Storage</div>
+      <div class="modal-content">
+        <div class="info-text">Select a file to open:</div>
+        <div class="file-list" id="fileList"></div>
+        <div class="modal-buttons">
+          <button class="button" onclick="closeOpenStorage()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    let currentFilename = 'untitled.txt';
+    let currentFileId = null;
+    let isModified = false;
+    let currentFontSize = 13;
+    let wordWrapEnabled = false;
+
+    const STORAGE_PREFIX = 'notepad_file_';
+
+    // Storage functions
+    function getAllSavedFiles() {
+      const files = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(STORAGE_PREFIX)) {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            files.push({
+              id: key,
+              name: data.name,
+              content: data.content,
+              modified: data.modified
+            });
+          } catch (e) {
+            console.error('Error reading file:', e);
+          }
+        }
+      }
+      return files.sort((a, b) => b.modified - a.modified);
+    }
+
+    function saveToStorageFile(filename, content) {
+      const fileId = currentFileId || STORAGE_PREFIX + Date.now();
+      const data = {
+        name: filename,
+        content: content,
+        modified: Date.now()
+      };
+      localStorage.setItem(fileId, JSON.stringify(data));
+      currentFileId = fileId;
+      return fileId;
+    }
+
+    function loadFromStorage(fileId) {
+      try {
+        const data = JSON.parse(localStorage.getItem(fileId));
+        if (data) {
+          editor.value = data.content;
+          currentFilename = data.name;
+          currentFileId = fileId;
+          isModified = false;
+          updateStatus();
+        }
+      } catch (e) {
+        alert('Error loading file: ' + e.message);
+      }
+    }
+
+    function deleteFromStorage(fileId) {
+      localStorage.removeItem(fileId);
+    }
+
+    // Update status bar
+    function updateStatus() {
+      const text = editor.value;
+      const lines = text.split('\n').length;
+      const chars = text.length;
+      
+      document.getElementById('charCount').textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+      document.getElementById('lineCount').textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
+      document.getElementById('filename').textContent = currentFilename;
+      document.getElementById('modified').textContent = isModified ? 'Modified' : '';
+    }
+
+    // Editor input handler
+    editor.addEventListener('input', () => {
+      isModified = true;
+      updateStatus();
+    });
+
+    // Menu handling
+    let activeMenu = null;
+
+    function toggleMenu(menuId, element) {
+      const menu = document.getElementById(menuId);
+      
+      // Close all menus first
+      document.querySelectorAll('.dropdown').forEach(m => m.classList.remove('show'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      
+      if (activeMenu === menuId) {
+        activeMenu = null;
+      } else {
+        menu.classList.add('show');
+        element.classList.add('active');
+        activeMenu = menuId;
+      }
+    }
+
+    // Close menus when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.menu-item')) {
+        document.querySelectorAll('.dropdown').forEach(m => m.classList.remove('show'));
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        activeMenu = null;
+      }
+    });
+
+    // File operations
+    function newFile() {
+      if (isModified && !confirm('You have unsaved changes. Continue?')) {
+        return;
+      }
+      editor.value = '';
+      currentFilename = 'untitled.txt';
+      currentFileId = null;
+      isModified = false;
+      updateStatus();
+    }
+
+    function openFromComputer() {
+      if (isModified && !confirm('You have unsaved changes. Continue?')) {
+        return;
+      }
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileOpen(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        editor.value = e.target.result;
+        currentFilename = file.name;
+        currentFileId = null; // New file from computer
+        isModified = false;
+        updateStatus();
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset input
+    }
+
+    function openFromStorage() {
+      const files = getAllSavedFiles();
+      const fileList = document.getElementById('fileList');
+      
+      if (files.length === 0) {
+        fileList.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No saved files</div>';
+      } else {
+        fileList.innerHTML = files.map(file => {
+          const date = new Date(file.modified).toLocaleString();
+          return `
+            <div class="file-item">
+              <div class="file-item-name">
+                <div style="font-weight: bold;">${file.name}</div>
+                <div style="font-size: 9px; color: #666;">${date}</div>
+              </div>
+              <div class="file-item-actions">
+                <button class="file-item-btn" onclick="event.stopPropagation(); loadFileFromStorage('${file.id}')">Open</button>
+                <button class="file-item-btn" onclick="event.stopPropagation(); deleteFile('${file.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      document.getElementById('openStorageModal').classList.add('show');
+    }
+
+    function loadFileFromStorage(fileId) {
+      if (isModified && !confirm('You have unsaved changes. Continue?')) {
+        return;
+      }
+      loadFromStorage(fileId);
+      closeOpenStorage();
+    }
+
+    function deleteFile(fileId) {
+      if (confirm('Delete this file permanently?')) {
+        deleteFromStorage(fileId);
+        openFromStorage(); // Refresh list
+      }
+    }
+
+    function closeOpenStorage() {
+      document.getElementById('openStorageModal').classList.remove('show');
+    }
+
+    function saveToStorage() {
+      const content = editor.value;
+      saveToStorageFile(currentFilename, content);
+      isModified = false;
+      updateStatus();
+      alert('File saved to storage!');
+    }
+
+    function saveToStorageAs() {
+      document.getElementById('saveFilename').value = currentFilename;
+      document.getElementById('saveAsModal').classList.add('show');
+    }
+
+    function downloadFile() {
+      const content = editor.value;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function confirmSaveAs() {
+      const filename = document.getElementById('saveFilename').value.trim();
+      if (!filename) {
+        alert('Please enter a filename');
+        return;
+      }
+      
+      if (!filename.endsWith('.txt')) {
+        currentFilename = filename + '.txt';
+      } else {
+        currentFilename = filename;
+      }
+      
+      closeSaveAsModal();
+      saveToStorage();
+    }
+
+    function closeSaveAsModal() {
+      document.getElementById('saveAsModal').classList.remove('show');
+    }
+
+    function showAbout() {
+      document.getElementById('aboutModal').classList.add('show');
+    }
+
+    function closeAbout() {
+      document.getElementById('aboutModal').classList.remove('show');
+    }
+
+    // Edit operations
+    function undo() {
+      document.execCommand('undo');
+    }
+
+    function selectAll() {
+      editor.select();
+    }
+
+    function copyText() {
+      document.execCommand('copy');
+    }
+
+    function cutText() {
+      document.execCommand('cut');
+      isModified = true;
+      updateStatus();
+    }
+
+    function pasteText() {
+      // Paste is handled by browser
+    }
+
+    function clearAll() {
+      if (confirm('Clear all text?')) {
+        editor.value = '';
+        isModified = true;
+        updateStatus();
+      }
+    }
+
+    // View operations
+    function toggleWordWrap() {
+      wordWrapEnabled = !wordWrapEnabled;
+      editor.style.whiteSpace = wordWrapEnabled ? 'pre-wrap' : 'pre';
+      editor.style.overflowX = wordWrapEnabled ? 'hidden' : 'auto';
+    }
+
+    function increaseFontSize() {
+      currentFontSize += 2;
+      editor.style.fontSize = currentFontSize + 'px';
+    }
+
+    function decreaseFontSize() {
+      if (currentFontSize > 8) {
+        currentFontSize -= 2;
+        editor.style.fontSize = currentFontSize + 'px';
+      }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch(e.key.toLowerCase()) {
+          case 'n':
+            e.preventDefault();
+            newFile();
+            break;
+          case 'o':
+            e.preventDefault();
+            openFromComputer();
+            break;
+          case 's':
+            e.preventDefault();
+            saveToStorage();
+            break;
+          case 'a':
+            // Allow default select all
+            break;
+          case '+':
+          case '=':
+            e.preventDefault();
+            increaseFontSize();
+            break;
+          case '-':
+            e.preventDefault();
+            decreaseFontSize();
+            break;
+        }
+      }
+    });
+
+    // Initialize
+    updateStatus();
+    editor.focus();
+  </script>
+</body>
+</html>
