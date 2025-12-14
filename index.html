@@ -443,24 +443,30 @@
     // Desktop Icon Component
     function DesktopIcon({ icon, label, onDoubleClick }) {
       const [touchActive, setTouchActive] = useState(false);
-      const touchTimerRef = useRef(null);
+      const touchHandledRef = useRef(false);
 
       const handleTouchStart = (e) => {
         setTouchActive(true);
+        touchHandledRef.current = false;
       };
 
       const handleTouchEnd = (e) => {
         e.preventDefault();
         setTouchActive(false);
+        touchHandledRef.current = true;
         // On touch devices, single tap to open
         if (onDoubleClick) {
           onDoubleClick();
         }
+        // Reset after a short delay to allow mouse events to check
+        setTimeout(() => {
+          touchHandledRef.current = false;
+        }, 500);
       };
 
-      const handleClick = (e) => {
-        // Only handle double-click for mouse users
-        if (e.detail === 2) {
+      const handleDoubleClick = (e) => {
+        // Only handle double-click if not recently handled by touch
+        if (!touchHandledRef.current && onDoubleClick) {
           onDoubleClick();
         }
       };
@@ -468,7 +474,7 @@
       return (
         <div 
           className={`desktop-icon ${touchActive ? 'active' : ''}`}
-          onDoubleClick={onDoubleClick}
+          onDoubleClick={handleDoubleClick}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
