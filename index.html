@@ -28,15 +28,31 @@
       height: calc(100vh - 40px);
       position: relative;
       padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 90px);
+      grid-auto-rows: 90px;
+      gap: 10px;
+      align-content: start;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .desktop-icon {
       width: 80px;
+      height: 80px;
       text-align: center;
       cursor: pointer;
-      margin: 10px;
-      display: inline-block;
-      vertical-align: top;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .desktop-icon:active {
+      opacity: 0.7;
     }
 
     .desktop-icon-image {
@@ -84,6 +100,9 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .start-button:active {
@@ -100,6 +119,7 @@
       margin-left: 10px;
       flex: 1;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .taskbar-button {
@@ -113,6 +133,9 @@
       max-width: 160px;
       overflow: hidden;
       text-overflow: ellipsis;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .taskbar-button.active {
@@ -143,6 +166,88 @@
       min-height: 200px;
       display: flex;
       flex-direction: column;
+      transition: all 0.1s ease;
+    }
+
+    .window.maximized {
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: calc(100vh - 40px) !important;
+      transform: none !important;
+    }
+
+    .window-resizer {
+      position: absolute;
+      background: transparent;
+    }
+
+    .window-resizer.top {
+      top: -5px;
+      left: 5px;
+      right: 5px;
+      height: 10px;
+      cursor: n-resize;
+    }
+
+    .window-resizer.bottom {
+      bottom: -5px;
+      left: 5px;
+      right: 5px;
+      height: 10px;
+      cursor: s-resize;
+    }
+
+    .window-resizer.left {
+      left: -5px;
+      top: 5px;
+      bottom: 5px;
+      width: 10px;
+      cursor: w-resize;
+    }
+
+    .window-resizer.right {
+      right: -5px;
+      top: 5px;
+      bottom: 5px;
+      width: 10px;
+      cursor: e-resize;
+    }
+
+    .window-resizer.top-left {
+      top: -5px;
+      left: -5px;
+      width: 15px;
+      height: 15px;
+      cursor: nw-resize;
+    }
+
+    .window-resizer.top-right {
+      top: -5px;
+      right: -5px;
+      width: 15px;
+      height: 15px;
+      cursor: ne-resize;
+    }
+
+    .window-resizer.bottom-left {
+      bottom: -5px;
+      left: -5px;
+      width: 15px;
+      height: 15px;
+      cursor: sw-resize;
+    }
+
+    .window-resizer.bottom-right {
+      bottom: -5px;
+      right: -5px;
+      width: 15px;
+      height: 15px;
+      cursor: se-resize;
+    }
+
+    .window.maximized .window-resizer {
+      display: none;
     }
 
     .window-titlebar {
@@ -177,6 +282,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     .window-button:active {
@@ -190,6 +299,7 @@
       margin: 2px;
       overflow: auto;
       padding: 10px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .start-menu {
@@ -219,11 +329,19 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     .start-menu-item:hover {
       background: #000080;
       color: #fff;
+    }
+
+    .start-menu-item:active {
+      background: #000060;
     }
 
     .login-screen {
@@ -295,15 +413,20 @@
 
     .app-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, 100px);
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 20px;
       padding: 10px;
+      max-height: none;
     }
 
     .app-item {
       text-align: center;
       cursor: pointer;
       padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
     }
 
     .app-item:hover {
@@ -320,11 +443,15 @@
       align-items: center;
       justify-content: center;
       font-size: 24px;
+      flex-shrink: 0;
     }
 
     .app-name {
       font-size: 11px;
       word-wrap: break-word;
+      word-break: break-word;
+      line-height: 1.3;
+      max-width: 100%;
     }
   </style>
 </head>
@@ -337,6 +464,7 @@
 
     // Storage utilities
     const STORAGE_KEY = 'os_installed_apps';
+    const DESKTOP_APPS_KEY = 'os_desktop_apps';
     
     const getApps = () => {
       try {
@@ -348,6 +476,18 @@
     
     const saveApps = (apps) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+    };
+
+    const getDesktopApps = () => {
+      try {
+        return JSON.parse(localStorage.getItem(DESKTOP_APPS_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    };
+
+    const saveDesktopApps = (appIds) => {
+      localStorage.setItem(DESKTOP_APPS_KEY, JSON.stringify(appIds));
     };
 
     // Login Screen
@@ -386,8 +526,31 @@
 
     // Desktop Icon Component
     function DesktopIcon({ icon, label, onDoubleClick }) {
+      const [lastTap, setLastTap] = React.useState(0);
+      
+      const handleTap = () => {
+        const now = Date.now();
+        const timeSinceLastTap = now - lastTap;
+        
+        if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+          // Double tap detected
+          onDoubleClick();
+          setLastTap(0);
+        } else {
+          setLastTap(now);
+        }
+      };
+      
       return (
-        <div className="desktop-icon" onDoubleClick={onDoubleClick}>
+        <div 
+          className="desktop-icon" 
+          onDoubleClick={onDoubleClick}
+          onClick={handleTap}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            handleTap();
+          }}
+        >
           <div className="desktop-icon-image">{icon}</div>
           <div className="desktop-icon-label">{label}</div>
         </div>
@@ -395,31 +558,156 @@
     }
 
     // Window Component
-    function WindowFrame({ window, isActive, onClose, onFocus, onMinimize, children }) {
+    function WindowFrame({ window, isActive, onClose, onFocus, onMinimize, onMaximize, onResize, children }) {
       const nodeRef = useRef(null);
+      const [isResizing, setIsResizing] = useState(false);
+      const resizeData = useRef({ direction: '', startX: 0, startY: 0, startWidth: 0, startHeight: 0, startLeft: 0, startTop: 0 });
+      
+      const handleTouchStart = (e) => {
+        if (e.target.closest('.window-titlebar')) {
+          onFocus();
+        }
+      };
+      
+      const handleDoubleClick = (e) => {
+        if (e.target.closest('.window-titlebar') && !e.target.closest('.window-controls')) {
+          onMaximize();
+        }
+      };
+
+      const startResize = (e, direction) => {
+        if (window.maximized) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const rect = nodeRef.current.getBoundingClientRect();
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        
+        resizeData.current = {
+          direction,
+          startX: clientX,
+          startY: clientY,
+          startWidth: rect.width,
+          startHeight: rect.height,
+          startLeft: rect.left,
+          startTop: rect.top
+        };
+        
+        setIsResizing(true);
+        onFocus();
+      };
+
+      useEffect(() => {
+        if (!isResizing) return;
+
+        const handleMouseMove = (e) => {
+          const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+          const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+          
+          const deltaX = clientX - resizeData.current.startX;
+          const deltaY = clientY - resizeData.current.startY;
+          const { direction, startWidth, startHeight, startLeft, startTop } = resizeData.current;
+
+          let newWidth = startWidth;
+          let newHeight = startHeight;
+          let newX = window.x;
+          let newY = window.y;
+
+          // Calculate new dimensions based on direction
+          if (direction.includes('right')) {
+            newWidth = Math.max(300, startWidth + deltaX);
+          }
+          if (direction.includes('left')) {
+            newWidth = Math.max(300, startWidth - deltaX);
+            newX = window.x + deltaX;
+          }
+          if (direction.includes('bottom')) {
+            newHeight = Math.max(200, startHeight + deltaY);
+          }
+          if (direction.includes('top')) {
+            newHeight = Math.max(200, startHeight - deltaY);
+            newY = window.y + deltaY;
+          }
+
+          onResize(window.id, newWidth, newHeight, newX, newY);
+        };
+
+        const handleMouseUp = () => {
+          setIsResizing(false);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('touchmove', handleMouseMove);
+        document.addEventListener('touchend', handleMouseUp);
+
+        return () => {
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
+          document.removeEventListener('touchmove', handleMouseMove);
+          document.removeEventListener('touchend', handleMouseUp);
+        };
+      }, [isResizing, window.id, window.x, window.y, onResize]);
       
       return (
         <Draggable
           handle=".window-titlebar"
           nodeRef={nodeRef}
-          defaultPosition={{ x: window.x || 100, y: window.y || 100 }}
+          position={{ x: window.x || 100, y: window.y || 100 }}
+          onDrag={(e, data) => {
+            // Update position during drag
+            onResize(window.id, window.width, window.height, data.x, data.y);
+          }}
+          enableUserSelectHack={false}
+          disabled={window.maximized || isResizing}
         >
           <div
             ref={nodeRef}
-            className="window"
+            className={`window ${window.maximized ? 'maximized' : ''}`}
             style={{
               zIndex: isActive ? 1000 : window.zIndex || 1,
-              width: window.width || 600,
-              height: window.height || 400,
-              display: window.minimized ? 'none' : 'flex'
+              width: window.maximized ? '100vw' : (window.width || 600),
+              height: window.maximized ? 'calc(100vh - 40px)' : (window.height || 400),
+              display: window.minimized ? 'none' : 'flex',
+              top: window.maximized ? 0 : undefined,
+              left: window.maximized ? 0 : undefined
             }}
             onMouseDown={onFocus}
+            onTouchStart={handleTouchStart}
           >
-            <div className={`window-titlebar ${!isActive ? 'inactive' : ''}`}>
+            {/* Resize handles */}
+            <div className="window-resizer top" onMouseDown={(e) => startResize(e, 'top')} onTouchStart={(e) => startResize(e, 'top')} />
+            <div className="window-resizer bottom" onMouseDown={(e) => startResize(e, 'bottom')} onTouchStart={(e) => startResize(e, 'bottom')} />
+            <div className="window-resizer left" onMouseDown={(e) => startResize(e, 'left')} onTouchStart={(e) => startResize(e, 'left')} />
+            <div className="window-resizer right" onMouseDown={(e) => startResize(e, 'right')} onTouchStart={(e) => startResize(e, 'right')} />
+            <div className="window-resizer top-left" onMouseDown={(e) => startResize(e, 'top-left')} onTouchStart={(e) => startResize(e, 'top-left')} />
+            <div className="window-resizer top-right" onMouseDown={(e) => startResize(e, 'top-right')} onTouchStart={(e) => startResize(e, 'top-right')} />
+            <div className="window-resizer bottom-left" onMouseDown={(e) => startResize(e, 'bottom-left')} onTouchStart={(e) => startResize(e, 'bottom-left')} />
+            <div className="window-resizer bottom-right" onMouseDown={(e) => startResize(e, 'bottom-right')} onTouchStart={(e) => startResize(e, 'bottom-right')} />
+            
+            <div 
+              className={`window-titlebar ${!isActive ? 'inactive' : ''}`}
+              onDoubleClick={handleDoubleClick}
+            >
               <span>{window.title}</span>
               <div className="window-controls">
-                <div className="window-button" onClick={onMinimize}>_</div>
-                <div className="window-button" onClick={onClose}>×</div>
+                <div 
+                  className="window-button" 
+                  onClick={onMinimize}
+                  onTouchEnd={(e) => { e.stopPropagation(); onMinimize(); }}
+                >_</div>
+                <div 
+                  className="window-button" 
+                  onClick={onMaximize}
+                  onTouchEnd={(e) => { e.stopPropagation(); onMaximize(); }}
+                >□</div>
+                <div 
+                  className="window-button" 
+                  onClick={onClose}
+                  onTouchEnd={(e) => { e.stopPropagation(); onClose(); }}
+                >×</div>
               </div>
             </div>
             <div className="window-content">
@@ -580,12 +868,21 @@
     // Explorer App (Library)
     function ExplorerApp({ onOpenApp }) {
       const [apps, setApps] = useState(getApps());
+      const [desktopApps, setDesktopApps] = useState(getDesktopApps());
       
       const handleDelete = (id) => {
         if (confirm('Delete this application?')) {
           const updatedApps = apps.filter(app => app.id !== id);
           setApps(updatedApps);
           saveApps(updatedApps);
+          
+          // Remove from desktop if present
+          const updatedDesktopApps = desktopApps.filter(appId => appId !== id);
+          setDesktopApps(updatedDesktopApps);
+          saveDesktopApps(updatedDesktopApps);
+          
+          // Notify parent to refresh desktop
+          window.postMessage({ type: 'desktop-apps-updated' }, '*');
         }
       };
       
@@ -639,11 +936,28 @@
           URL.revokeObjectURL(url);
         }
       };
+
+      const toggleDesktop = (appId) => {
+        const isOnDesktop = desktopApps.includes(appId);
+        let updatedDesktopApps;
+        
+        if (isOnDesktop) {
+          updatedDesktopApps = desktopApps.filter(id => id !== appId);
+        } else {
+          updatedDesktopApps = [...desktopApps, appId];
+        }
+        
+        setDesktopApps(updatedDesktopApps);
+        saveDesktopApps(updatedDesktopApps);
+        
+        // Notify parent to refresh desktop
+        window.postMessage({ type: 'desktop-apps-updated' }, '*');
+      };
       
       return (
         <div>
           <div style={{ padding: '10px', background: '#c0c0c0', borderBottom: '2px solid #fff' }}>
-            <strong>My Applications</strong>
+            <strong>My Applications</strong> - {apps.length} installed
           </div>
           {apps.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
@@ -651,32 +965,43 @@
             </div>
           ) : (
             <div className="app-grid">
-              {apps.map(app => (
-                <div key={app.id} className="app-item">
-                  <div onDoubleClick={() => onOpenApp(app)}>
-                    <div className="app-icon">{app.icon}</div>
-                    <div className="app-name">{app.title}</div>
+              {apps.map(app => {
+                const isOnDesktop = desktopApps.includes(app.id);
+                return (
+                  <div key={app.id} className="app-item">
+                    <div onDoubleClick={() => onOpenApp(app)}>
+                      <div className="app-icon">{app.icon}</div>
+                      <div className="app-name">{app.title}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '5px', marginTop: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button 
+                        className="button" 
+                        style={{ fontSize: '9px', padding: '2px 6px' }}
+                        onClick={() => toggleDesktop(app.id)}
+                        title={isOnDesktop ? 'Remove from desktop' : 'Add to desktop'}
+                      >
+                        {isOnDesktop ? '📌' : '📍'}
+                      </button>
+                      <button 
+                        className="button" 
+                        style={{ fontSize: '9px', padding: '2px 6px' }}
+                        onClick={() => handleDownload(app)}
+                        title="Download to computer"
+                      >
+                        💾
+                      </button>
+                      <button 
+                        className="button" 
+                        style={{ fontSize: '9px', padding: '2px 6px' }}
+                        onClick={() => handleDelete(app.id)}
+                        title="Delete from OS"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '5px', marginTop: '5px', justifyContent: 'center' }}>
-                    <button 
-                      className="button" 
-                      style={{ fontSize: '10px', padding: '2px 8px' }}
-                      onClick={() => handleDownload(app)}
-                      title="Download to computer"
-                    >
-                      💾
-                    </button>
-                    <button 
-                      className="button" 
-                      style={{ fontSize: '10px', padding: '2px 8px' }}
-                      onClick={() => handleDelete(app.id)}
-                      title="Delete from OS"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -707,11 +1032,52 @@
       const [activeWindowId, setActiveWindowId] = useState(null);
       const [startMenuOpen, setStartMenuOpen] = useState(false);
       const [time, setTime] = useState(new Date());
+      const [desktopApps, setDesktopApps] = useState([]);
       
       useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
       }, []);
+      
+      // Load desktop apps
+      useEffect(() => {
+        loadDesktopApps();
+      }, []);
+      
+      // Listen for desktop apps updates
+      useEffect(() => {
+        const handleMessage = (event) => {
+          if (event.data.type === 'desktop-apps-updated') {
+            loadDesktopApps();
+          }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+      }, []);
+      
+      const loadDesktopApps = () => {
+        const desktopAppIds = getDesktopApps();
+        const allApps = getApps();
+        const apps = allApps.filter(app => desktopAppIds.includes(app.id));
+        setDesktopApps(apps);
+      };
+      
+      // Close start menu when clicking/tapping outside
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (startMenuOpen && !e.target.closest('.start-button') && !e.target.closest('.start-menu')) {
+            setStartMenuOpen(false);
+          }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        
+        return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+          document.removeEventListener('touchstart', handleClickOutside);
+        };
+      }, [startMenuOpen]);
       
       // Listen for resize messages from apps
       useEffect(() => {
@@ -779,6 +1145,7 @@
             width: appType === 'webview' ? 800 : 600,
             height: appType === 'webview' ? 600 : 400,
             minimized: false,
+            maximized: false,
             zIndex: 1
           };
           setWindows([...windows, newWindow]);
@@ -801,6 +1168,26 @@
         if (activeWindowId === id) {
           setActiveWindowId(null);
         }
+      };
+      
+      const maximizeWindow = (id) => {
+        setWindows(windows.map(w => 
+          w.id === id ? { 
+            ...w, 
+            maximized: !w.maximized,
+            // Store previous size/position for restoring
+            prevWidth: w.maximized ? w.prevWidth : w.width,
+            prevHeight: w.maximized ? w.prevHeight : w.height,
+            prevX: w.maximized ? w.prevX : w.x,
+            prevY: w.maximized ? w.prevY : w.y
+          } : w
+        ));
+      };
+      
+      const resizeWindow = (id, width, height, x, y) => {
+        setWindows(windows.map(w => 
+          w.id === id ? { ...w, width, height, x, y } : w
+        ));
       };
       
       const focusWindow = (id) => {
@@ -841,6 +1228,15 @@
               onDoubleClick={() => openWindow('explorer')}
             />
             
+            {desktopApps.map(app => (
+              <DesktopIcon
+                key={app.id}
+                icon={app.icon}
+                label={app.title}
+                onDoubleClick={() => openWindow('webview', app)}
+              />
+            ))}
+            
             {windows.map(window => (
               <WindowFrame
                 key={window.id}
@@ -849,6 +1245,8 @@
                 onClose={() => closeWindow(window.id)}
                 onFocus={() => focusWindow(window.id)}
                 onMinimize={() => minimizeWindow(window.id)}
+                onMaximize={() => maximizeWindow(window.id)}
+                onResize={resizeWindow}
               >
                 {renderWindowContent(window)}
               </WindowFrame>
@@ -859,6 +1257,11 @@
             <div
               className={`start-button ${startMenuOpen ? 'active' : ''}`}
               onClick={() => setStartMenuOpen(!startMenuOpen)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setStartMenuOpen(!startMenuOpen);
+              }}
             >
               <span style={{ fontSize: '16px' }}>⊞</span>
               <span>Start</span>
@@ -870,6 +1273,10 @@
                   key={window.id}
                   className={`taskbar-button ${activeWindowId === window.id ? 'active' : ''}`}
                   onClick={() => focusWindow(window.id)}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    focusWindow(window.id);
+                  }}
                 >
                   {window.title}
                 </div>
@@ -884,13 +1291,36 @@
           {startMenuOpen && (
             <div className="start-menu">
               <div className="start-menu-header">InterOS</div>
-              <div className="start-menu-item" onClick={() => openWindow('browser')}>
+              <div 
+                className="start-menu-item" 
+                onClick={() => openWindow('browser')}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  openWindow('browser');
+                }}
+              >
                 🌐 Browser (Install Apps)
               </div>
-              <div className="start-menu-item" onClick={() => openWindow('explorer')}>
+              <div 
+                className="start-menu-item" 
+                onClick={() => openWindow('explorer')}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  openWindow('explorer');
+                }}
+              >
                 📁 File Explorer
               </div>
-              <div className="start-menu-item" onClick={() => { setLoggedIn(false); setWindows([]); setStartMenuOpen(false); }}>
+              <div 
+                className="start-menu-item" 
+                onClick={() => { setLoggedIn(false); setWindows([]); setStartMenuOpen(false); }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setLoggedIn(false);
+                  setWindows([]);
+                  setStartMenuOpen(false);
+                }}
+              >
                 🚪 Log Off {username}
               </div>
             </div>
