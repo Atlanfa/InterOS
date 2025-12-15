@@ -75,8 +75,9 @@
 ---
 
 ## ✅ TODO & Future Plans
-* [ ] Add touch input support for buit in windows 
-* [ ] Implement full, reliable Drag-and-Drop functionality for Desktop icons.
+* [X] Add touch input support for buit in windows 
+* [50/50] Implement full, reliable Drag-and-Drop functionality for Desktop icons.
+* [ ] update offline to the latest 
 * [ ] Introduce an **Export/Import** function for the app library (JSON) to easily migrate settings between different browsers/devices.
 * [ ] Explore **WebRTC** integration to enable basic peer-to-peer (P2P) communication (chat, data exchange) between users on a local network.
 * [ ] Add a visual status bar or tray icon area.
