@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMYK Thermal Pen Guide</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #f0f0f0; padding: 20px; }
+        #controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        canvas { border: 1px solid #000; background: white; max-width: 100%; height: auto; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <h2>CMYK Pen Assistant</h2>
+    <input type="file" id="upload" accept="image/*"><br><br>
+    <label>Detail Level (Max Gap): </label>
+    <input type="range" id="maxGap" min="10" max="50" value="20">
+    <label> (Min Gap): </label>
+    <input type="range" id="minGap" min="2" max="9" value="5">
+    <br><br>
+    <button class="btn" onclick="processImage()">Generate Guide</button>
+    <button class="btn" onclick="window.print()">Print for Thermal</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    function processImage() {
+        const file = document.getElementById('upload').files[0];
+        if (!file) return alert("Please upload an image first!");
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                // 1. Calculate spacing based on your formula: (Max - Min) - 1
+                const maxG = parseInt(document.getElementById('maxGap').value);
+                const minG = parseInt(document.getElementById('minGap').value);
+                const spacing = Math.max(5, (maxG - minG) - 1);
+
+                // 2. Clear canvas for the B&W guide
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "black";
+                ctx.font = `${spacing * 0.8}px monospace`;
+
+                for (let y = 0; y < canvas.height; y += spacing) {
+                    for (let x = 0; x < canvas.width; x += spacing) {
+                        const i = (y * canvas.width + x) * 4;
+                        const r = data[i], g = data[i+1], b = data[i+2];
+
+                        // Convert RGB to CMYK
+                        let c = 1 - (r / 255);
+                        let m = 1 - (g / 255);
+                        let y_col = 1 - (b / 255);
+                        let k = Math.min(c, m, y_col);
+                        
+                        // Refine CMY based on K
+                        if (k < 1) {
+                            c = (c - k) / (1 - k);
+                            m = (m - k) / (1 - k);
+                            y_col = (y_col - k) / (1 - k);
+                        } else {
+                            c = 0; m = 0; y_col = 0;
+                        }
+
+                        // Determine primary letter (highest value)
+                        const channels = [
+                            { n: 'C', v: c }, { n: 'M', v: m }, 
+                            { n: 'Y', v: y_col }, { n: 'K', v: k }
+                        ];
+                        channels.sort((a, b) => b.v - a.v);
+                        
+                        // Only draw if the area isn't pure white
+                        if (channels[0].v > 0.1) {
+                            const label = channels.filter(ch => ch.v > 0.2).map(ch => ch.n).join('');
+                            ctx.fillText(label, x, y);
+                        }
+                    }
+                }
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+
+</body>
+</html>
