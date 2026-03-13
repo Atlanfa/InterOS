@@ -1,5 +1,37 @@
 # 🌐 InterOS: The Portable Single-File Web Operating System
 
+---
+
+## 🚀 GitHub Pages Deployment (rocksdesign.ca)
+
+### GitHub Pages Settings
+- **Source:** Deploy from branch `main`, folder `/ (root)`
+- **Custom domain:** `rocksdesign.ca`
+- **Enforce HTTPS:** Enable once DNS propagates
+
+### DNS Records at Register.ca
+Configure the following records for `rocksdesign.ca`:
+
+**A records (apex domain `@`):**
+| Type | Host | Value |
+|------|------|-------|
+| A | @ | 185.199.108.153 |
+| A | @ | 185.199.109.153 |
+| A | @ | 185.199.110.153 |
+| A | @ | 185.199.111.153 |
+
+**CNAME record (www):**
+| Type | Host | Value |
+|------|------|-------|
+| CNAME | www | atlanfa.github.io |
+
+### Repository Files
+- `index.html` — site entry point (served from repo root)
+- `CNAME` — tells GitHub Pages to use `rocksdesign.ca`
+- `.nojekyll` — disables Jekyll processing
+
+---
+
 ### Short Description
 
 > **InterOS** is a fully self-contained (single-file) Web Operating System built on React, featuring the classic Windows 95 UI aesthetic. It allows users to **"install"** any web application (via URL or local HTML files) into their personal library, run them in a windowed environment, and carry the entire system environment in a single, portable HTML file.
