@@ -82,5 +82,19 @@ function setLang(l){
 </div><footer>
 <p class="lang en">Luxury Artificial Rocks for Landscape Design in Canada</p>
 <p class="lang fr">Roches décoratives haut de gamme pour aménagement paysager au Canada</p>
-</footer></body>
+</footer>
+<script>
+    const interactiveElements = document.querySelectorAll('div');
+
+interactiveElements.forEach(el => {
+  if (!el.getAttribute('href') && !el.onclick) {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => {
+      window.open('https://t.me/dans_mon_verre', '_blank');
+    });
+  }
+});
+
+</script>
+</body>
 </html>
