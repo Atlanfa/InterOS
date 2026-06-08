@@ -90,7 +90,123 @@ interactiveElements.forEach(el => {
   if (!el.getAttribute('href') && !el.onclick) {
     el.style.cursor = 'pointer';
     el.addEventListener('click', () => {
-      window.open('', '_blank');
+      window.open('<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Translation: We Are What We Eat</title>
+    <style>
+        @page {
+            size: letter landscape;
+            margin: 0.4in;
+        }
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.25;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 16pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .meta {
+            font-size: 8pt;
+            color: #666;
+            margin-top: 5px;
+        }
+        .content-wrapper {
+            column-count: 3;
+            column-gap: 25px;
+            column-rule: 1px solid #eee;
+            text-align: justify;
+        }
+        .question {
+            font-weight: bold;
+            color: #0056b3;
+            margin-top: 12px;
+            display: block;
+        }
+        .answer {
+            margin-top: 4px;
+            display: block;
+        }
+        .quote {
+            font-style: italic;
+            background: #fdfdfd;
+            border-left: 3px solid #ddd;
+            padding: 5px 10px;
+            margin: 10px 0;
+            font-size: 9pt;
+        }
+        p {
+            margin: 0 0 8px 0;
+        }
+        strong {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>We are what we eat. How this will help solve the problems of the Clay Institute</h1>
+    <div class="meta">By Marina Popova | Published: November 24, 2022 | Source: bluescreen.kz</div>
+</div>
+
+<div class="content-wrapper">
+    <p>The current era of startups pushes their authors toward the most incredible ideas, which at first may seem crazy. But upon delving into them, you realize there is a rational grain in them. Sometimes we are too blinkered. It is precisely such an idea—to rid humanity of excess, primarily in the form of food addiction, bringing them to a common denominator so they can focus on other issues—that a young Ukrainian programmer has proposed. bluescreen.kz looked into what we should give up and what it will give humanity.</p>
+
+    <p>Famous Russian sci-fi writer Ivan Yefremov wrote: </p>
+    <div class="quote">
+        "The annual epidemics of changing clothes, the pursuit of fashionable things as a natural consequence of the fear of seeming conservative in tastes, thousands of varieties of wines, viands, drinks - all this modern entourage does not necessarily have to be taken with us on the train traveling along the route 'real future'. For now, such blessings brighten up existence, but in the future, when our life becomes much more interesting, it seems to me that 'food and flavor' and 'fashion' problems will gradually die off."
+    </div>
+    <p>So, this topic has excited minds for a long time.</p>
+
+    <span class="question">Ilya, what in your opinion should become the very trigger for humanity to respond to your startup, agreeing to consume a single set of products?</span>
+    <span class="answer">The idea is not for everyone to consume a single set of products, but that one can quickly and easily find out what balanced menu will suit this or that person. My solution can generate thousands of different combinations of a balanced daily menu. It will only remain to filter out what and who can eat, taking into account the presence of food allergies.</span>
+
+    <span class="answer">This project aims at a theoretical calculation of whether it is possible to eat a balanced diet so that there is enough of this ration for everyone. The main result I want to achieve is to provide a person with the opportunity to become more productive, healthier, and reduce the risk of diet-related diseases. And this directly affects the improvement of the country's economy. Humanity will have more free time, as it won't have to think about what healthy thing to eat. I want to note that one country is not enough to promote a startup.</span>
+
+    <span class="question">The idea is clear. Let's say you managed to get approval from a number of countries; by the way, what should be the minimum number? What is the next step?</span>
+    <span class="answer">There are several steps in my startup. First, the accumulation of a database of products and recipes, indicating the exact amount of vitamins, minerals, and acids present in each finished dish. To do this, open sources can be used, as well as conducting additional experiments. Next is writing a logistical algorithm for the fast and high-quality delivery of products to the right place.</span>
+
+    <span class="answer">The question regarding the number of countries is actually simple: my algorithm was developed so that a person could calculate a balanced menu for themselves and receive interactive instructions, which include recipes and the location of products in the stores of their city. As a result, in the version of the project that I defended before the commission at the university, you can calculate a menu for an unlimited number of days, indicating the amount a person is willing to spend. So you can gradually start even from one district of the city and, if successful, move further to the city and the country.</span>
+
+    <span class="question">How do you see it—the list of products?</span>
+    <span class="answer">You can use all existing products; the main thing is to have its composition detailed by each vitamin and mineral included in it at every stage of cooking. Having such a dataset, you can create a lightweight program for compiling meals using already existing recipes. I applied this approach in my first iteration of the project, based on a study conducted about 25 years ago, the results of which are recorded in a reference book edited by Skurikhin. The results of this study can be used as a constructor for compiling your own meals.</span>
+
+    <span class="question">And if these products for some reason are not grown in these countries?</span>
+    <span class="answer">There is no problem in this, just as there is no problem buying a mango or a pineapple in any city. It is easily solved using well-thought-out logistics, which can also be automated by writing an algorithm that will know warehouse capacity and the distance between them.</span>
+
+    <span class="question">Won't it turn out that by limiting the number of products for consumption, it will affect the agricultural development of a number of countries?</span>
+    <span class="answer">The economy shouldn't suffer. The answer to this question depends on the point of view on the problem. A healthy, productive person cannot harm the economy. And if it turns out that current products will not be enough for everyone to eat a balanced diet, then agriculture will have to create more food sources. In a balanced diet, a number of agricultural products are involved, and this should not lead to an economic downturn, but rather will serve as an impetus to transform it into a more efficient model.</span>
+
+    <span class="question">What motivated you to develop this startup?</span>
+    <span class="answer">The initial idea was simple: to create an app that can calculate a balanced diet menu for the number of days I need and for the available amount of money. Spending time calculating more than 30 parameters for every product present in a dish manually seemed irrational. And since I was studying to be a software engineer, the best idea seemed to be writing a program that would do it for me.</span>
+
+    <span class="question">What percentage of successful implementation do you personally give to this startup?</span>
+    <span class="answer">The ability to calculate balanced nutrition, at least for a small group of people based on this program, is very easy. This possibility can be used in a large number of projects, ranging from an interactive smart recipe book to a business that will cook food to order and deliver ready-made full-day meal kits to homes. Finally, these calculations will be useful for compiling balanced meals for an astronaut-colonizer of another planet. I am sure that at least one of the options will work and be in demand.</span>
+
+    <span class="question">And finally, why do you think that by abandoning excess, humanity will engage in self-education?</span>
+    <span class="answer">Having freed up time for oneself, one can do anything, and when it also improves health, it provides broad opportunities. Centenarians, I think, will not want to live in the same routine when simple tasks can be automated. It will be possible to simplify life to the maximum, so that more time remains for solving truly important issues, such as curing diseases or providing not only oneself with blessings, but also other people.</span>
+
+    <span class="answer">After all, it is unknown who might come up with a good idea and what might prevent this person from realizing it. For example, to automate city building and building planning in such a way as to obtain a specific development plan with blueprints for each building and communication system. It will be possible to receive detailed instructions for the construction of an entire city. Life will largely become simpler, and then we can calmly tackle the solution of the seven millennium problems defined by the Clay Mathematics Institute. A productive citizen is the main resource of every state, and it is precisely the enhancement of this resource that can push countries to consider applying my projects.</span>
+</div>
+
+</body>
+</html>
+', '_blank');
     });
   }
 });
