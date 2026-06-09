@@ -14,7 +14,7 @@ nav button{margin:5px;padding:8px 16px;border:none;background:#c9a96a;color:whit
 .hero h2{font-size:48px;background:rgba(0,0,0,0.5);padding:20px;border-radius:10px}
 .container{max-width:1200px;margin:auto;padding:40px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:30px}
-.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);transition:0.3s;cursor:pointer}
+.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);transition:0.3s}
 .card:hover{transform:translateY(-6px)}
 .card img{width:100%;height:200px;object-fit:cover}
 .card h3{margin:16px}
@@ -23,12 +23,13 @@ nav button{margin:5px;padding:8px 16px;border:none;background:#c9a96a;color:whit
 footer{background:#111;color:white;text-align:center;padding:30px;margin-top:40px}
 .lang{display:none}
 .lang.active{display:block}
-#modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center}
-#modal-overlay.active{display:flex}
-#modal-content{background:white;border-radius:14px;width:90%;max-width:800px;max-height:80vh;overflow:auto;position:relative}
-.close-btn{position:absolute;top:15px;right:15px;background:#c9a96a;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:16px;z-index:1000}
-.close-btn:hover{background:#a88a57}
 </style>
+<script>
+function setLang(l){
+ document.querySelectorAll('.lang').forEach(el=>el.classList.remove('active'));
+ document.querySelectorAll('.'+l).forEach(el=>el.classList.add('active'));
+}
+</script>
 </head>
 <body onload="setLang('en')">
 <header>
@@ -82,179 +83,18 @@ footer{background:#111;color:white;text-align:center;padding:30px;margin-top:40p
 <p class="lang en">Luxury Artificial Rocks for Landscape Design in Canada</p>
 <p class="lang fr">Roches décoratives haut de gamme pour aménagement paysager au Canada</p>
 </footer>
-
-<!-- Modal Overlay -->
-<div id="modal-overlay">
-  <div id="modal-content"></div>
-</div>
-
 <script>
-function setLang(l){
- document.querySelectorAll('.lang').forEach(el=>el.classList.remove('active'));
- document.querySelectorAll('.'+l).forEach(el=>el.classList.add('active'));
-}
+    const interactiveElements = document.querySelectorAll('div');
 
-function writeToIframe() {
-  // 1. Get the modal overlay
-  const modal = document.getElementById('modal-overlay');
-  const modalContent = document.getElementById('modal-content');
-  
-  // 2. Create iframe element
-  const iframe = document.createElement('iframe');
-  iframe.id = 'my-iframe-id';
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
-  
-  // 3. Clear previous content and add iframe
-  modalContent.innerHTML = '<button class="close-btn" onclick="closeModal()">✕</button>';
-  modalContent.appendChild(iframe);
-  
-  // 4. Access iframe document and write content
-  const iframeDoc = iframe.contentWindow.document;
-  iframeDoc.open();
-  iframeDoc.write(`<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Translation: We Are What We Eat</title>
-    <style>
-        @page {
-            size: letter landscape;
-            margin: 0.4in;
-        }
-        body {
-            font-family: "Helvetica", "Arial", sans-serif;
-            font-size: 9.5pt;
-            line-height: 1.25;
-            color: #222;
-            margin: 0;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-        }
-        h1 {
-            margin: 0;
-            font-size: 16pt;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .meta {
-            font-size: 8pt;
-            color: #666;
-            margin-top: 5px;
-        }
-        .content-wrapper {
-            column-count: 3;
-            column-gap: 25px;
-            column-rule: 1px solid #eee;
-            text-align: justify;
-        }
-        .question {
-            font-weight: bold;
-            color: #0056b3;
-            margin-top: 12px;
-            display: block;
-        }
-        .answer {
-            margin-top: 4px;
-            display: block;
-        }
-        .quote {
-            font-style: italic;
-            background: #fdfdfd;
-            border-left: 3px solid #ddd;
-            padding: 5px 10px;
-            margin: 10px 0;
-            font-size: 9pt;
-        }
-        p {
-            margin: 0 0 8px 0;
-        }
-        strong {
-            color: #000;
-        }
-    </style>
-</head>
-<body>
-
-<div class="header">
-    <h1>We are what we eat. How this will help solve the problems of the Clay Institute</h1>
-    <div class="meta">By Marina Popova | Published: November 24, 2022 | Source: bluescreen.kz</div>
-</div>
-
-<div class="content-wrapper">
-    <p>The current era of startups pushes their authors toward the most incredible ideas, which at first may seem crazy. But upon delving into them, you realize there is a rational grain in them.[...]
-
-    <p>Famous Russian sci-fi writer Ivan Yefremov wrote: </p>
-    <div class="quote">
-        "The annual epidemics of changing clothes, the pursuit of fashionable things as a natural consequence of the fear of seeming conservative in tastes, thousands of varieties of wines, viand[...]
-    </div>
-    <p>So, this topic has excited minds for a long time.</p>
-
-    <span class="question">Ilya, what in your opinion should become the very trigger for humanity to respond to your startup, agreeing to consume a single set of products?</span>
-    <span class="answer">The idea is not for everyone to consume a single set of products, but that one can quickly and easily find out what balanced menu will suit this or that person. My soluti[...]
-
-    <span class="answer">This project aims at a theoretical calculation of whether it is possible to eat a balanced diet so that there is enough of this ration for everyone. The main result I wan[...]
-
-    <span class="question">The idea is clear. Let's say you managed to get approval from a number of countries; by the way, what should be the minimum number? What is the next step?</span>
-    <span class="answer">There are several steps in my startup. First, the accumulation of a database of products and recipes, indicating the exact amount of vitamins, minerals, and acids present[...]
-
-    <span class="answer">The question regarding the number of countries is actually simple: my algorithm was developed so that a person could calculate a balanced menu for themselves and receive [...]
-
-    <span class="question">How do you see it—the list of products?</span>
-    <span class="answer">You can use all existing products; the main thing is to have its composition detailed by each vitamin and mineral included in it at every stage of cooking. Having such a [...]
-
-    <span class="question">And if these products for some reason are not grown in these countries?</span>
-    <span class="answer">There is no problem in this, just as there is no problem buying a mango or a pineapple in any city. It is easily solved using well-thought-out logistics, which can also b[...]
-
-    <span class="question">Won't it turn out that by limiting the number of products for consumption, it will affect the agricultural development of a number of countries?</span>
-    <span class="answer">The economy shouldn't suffer. The answer to this question depends on the point of view on the problem. A healthy, productive person cannot harm the economy. And if it tur[...]
-
-    <span class="question">What motivated you to develop this startup?</span>
-    <span class="answer">The initial idea was simple: to create an app that can calculate a balanced diet menu for the number of days I need and for the available amount of money. Spending time c[...]
-
-    <span class="question">What percentage of successful implementation do you personally give to this startup?</span>
-    <span class="answer">The ability to calculate balanced nutrition, at least for a small group of people based on this program, is very easy. This possibility can be used in a large number of p[...]
-
-    <span class="question">And finally, why do you think that by abandoning excess, humanity will engage in self-education?</span>
-    <span class="answer">Having freed up time for oneself, one can do anything, and when it also improves health, it provides broad opportunities. Centenarians, I think, will not want to live in [...]
-
-    <span class="answer">After all, it is unknown who might come up with a good idea and what might prevent this person from realizing it. For example, to automate city building and building plan[...]
-</div>
-
-</body>
-</html>`;
-  iframeDoc.close();
-  
-  // 5. Show the modal
-  modal.classList.add('active');
-}
-
-function closeModal() {
-  const modal = document.getElementById('modal-overlay');
-  modal.classList.remove('active');
-}
-
-// Close modal when clicking outside the content
-document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('modal-overlay');
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-  
-  // Add click handlers to all cards
-  const cards = document.querySelectorAll('.card');
-  cards.forEach(card => {
-    card.addEventListener('click', writeToIframe);
-  });
+interactiveElements.forEach(el => {
+  if (!el.getAttribute('href') && !el.onclick) {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => {
+      window.open('', '_blank');
+    });
+  }
 });
+
 </script>
 </body>
 </html>
