@@ -84,17 +84,56 @@ function setLang(l){
 <p class="lang fr">Roches décoratives haut de gamme pour aménagement paysager au Canada</p>
 </footer>
 <script>
-    const interactiveElements = document.querySelectorAll('div');
+/* New replacement API
+   - setReplacementHtml(htmlString): store the HTML that will replace the whole page.
+   - rewritePage(htmlString): replaces the entire document with the provided HTML string.
 
-interactiveElements.forEach(el => {
-  if (!el.getAttribute('href') && !el.onclick) {
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => {
-      window.open('', '_blank');
-    });
-  }
-});
+   Behavior:
+   - Cards (.card) are given pointer cursor and clicking/tapping a card will attempt to replace the page
+     with the stored replacement HTML. If no stored HTML exists, the user is prompted to paste HTML.
+   - This replaces the previous interactiveElements logic.
+*/
 
+function setReplacementHtml(html) {
+  window.__replacementHtml = String(html || '');
+}
+
+function rewritePage(html) {
+  if (!html) return;
+  // Replace the whole document with new HTML
+  document.open();
+  document.write(String(html));
+  document.close();
+}
+
+// Attach handlers to interactive elements (cards)
+function installReplacementHandlers() {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.style.cursor = 'pointer';
+    card.removeEventListener('click', card._replacementHandler);
+    const handler = () => {
+      const html = window.__replacementHtml;
+      if (html && html.length) {
+        rewritePage(html);
+      } else {
+        const pasted = prompt('Paste the full HTML to replace the page with:');
+        if (pasted) rewritePage(pasted);
+      }
+    };
+    card.addEventListener('click', handler);
+    // store for potential removal later
+    card._replacementHandler = handler;
+  });
+}
+
+// auto-install on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', installReplacementHandlers);
+
+// Expose functions for console usage
+window.setReplacementHtml = setReplacementHtml;
+window.rewritePage = rewritePage;
+window.installReplacementHandlers = installReplacementHandlers;
 </script>
 </body>
 </html>
