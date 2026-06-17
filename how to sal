@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare + GitHub Pages SSL Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #222;
+            border-bottom: 2px solid #eaecef;
+            padding-bottom: 10px;
+            font-size: 24px;
+        }
+        h2 {
+            color: #0366d6;
+            font-size: 18px;
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+        ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: #000;
+        }
+        code {
+            background-color: rgba(27,31,35,.05);
+            padding: .2em .4em;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 90%;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #6a737d;
+            border-top: 1px solid #eaecef;
+            padding-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cloudflare + GitHub Pages SSL Setup</h1>
+
+    <h2>Phase 1: Cloudflare Encryption</h2>
+    <ol>
+        <li>Log into your <strong>Cloudflare Dashboard</strong>.</li>
+        <li>Select <code>rocksdesign.ca</code>.</li>
+        <li>Open <strong>SSL/TLS</strong> from the sidebar.</li>
+        <li>Set encryption mode to <strong>Full</strong> or <strong>Full (Strict)</strong>.</li>
+    </ol>
+
+    <h2>Phase 2: Bypass Proxies</h2>
+    <ol>
+        <li>Go to <strong>DNS ➔ Records</strong> in Cloudflare.</li>
+        <li>Locate your <strong>A records</strong> and <code>www</code> <strong>CNAME</strong>.</li>
+        <li>Change status from <strong>Proxied (Orange)</strong> to <strong>DNS Only (Grey)</strong>.</li>
+    </ol>
+
+    <h2>Phase 3: GitHub Activation</h2>
+    <ol>
+        <li>Open GitHub repository <code>Atlanfa/InterOS</code>.</li>
+        <li>Go to <strong>Settings ➔ Pages</strong>.</li>
+        <li>Remove <code>rocksdesign.ca</code>, click <strong>Save</strong>.</li>
+        <li>Re-enter <code>rocksdesign.ca</code>, click <strong>Save</strong>.</li>
+        <li>Check the <strong>Enforce HTTPS</strong> box once verified.</li>
+    </ol>
+
+    <h2>Phase 4: Restore CDN</h2>
+    <ol>
+        <li>Return to Cloudflare <strong>DNS ➔ Records</strong>.</li>
+        <li>Switch records back to <strong>Proxied (Orange)</strong>.</li>
+        <li>Go to <strong>SSL/TLS ➔ Edge Certificates</strong>.</li>
+        <li>Enable <strong>Always Use HTTPS</strong>.</li>
+    </ol>
+
+    <div class="footer">
+        InterOS Deployment Guide • Deployment Verified
+    </div>
+
+</body>
+</html>
