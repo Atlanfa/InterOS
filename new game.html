@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE CAVE: FATALITY OF SIMULATION</title>
+    <style>
+        :root {
+            --bg-color: #010103;
+            --acid-green: #39ff14;
+            --portal-purple: #9d4edd;
+            --gold: #ffea00;
+            --text-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        /* Scanline effect */
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--portal-purple);
+            border-right: 1px solid var(--portal-purple);
+            position: relative;
+            z-index: 1;
+            background: radial-gradient(circle at center, #0a0a12 0%, var(--bg-color) 100%);
+        }
+
+        #stats-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(157, 78, 221, 0.1);
+            border-bottom: 2px solid var(--portal-purple);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            margin-top: 5px;
+            font-size: 1.2rem;
+            text-shadow: 0 0 8px currentColor;
+        }
+
+        .val-entropy { color: #ff3333; text-shadow: 0 0 8px #ff3333; transition: color 0.5s; }
+        .val-spectrum { color: var(--acid-green); }
+        .val-connection { color: var(--gold); }
+
+        #screen {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar */
+        #screen::-webkit-scrollbar { width: 6px; }
+        #screen::-webkit-scrollbar-track { background: #000; }
+        #screen::-webkit-scrollbar-thumb { background: var(--portal-purple); border-radius: 3px; }
+
+        .log-entry {
+            margin-bottom: 25px;
+            opacity: 0;
+            animation: fadeIn 0.8s forwards ease-out;
+        }
+
+        .epigraph {
+            color: var(--portal-purple);
+            font-style: italic;
+            border-left: 3px solid var(--portal-purple);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px var(--portal-purple);
+        }
+
+        .narrative {
+            margin-bottom: 15px;
+        }
+
+        .highlight-green { color: var(--acid-green); text-shadow: 0 0 5px var(--acid-green); }
+        .highlight-gold { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+        .acid-burn {
+            color: var(--acid-green);
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px dashed var(--acid-green);
+            padding: 10px;
+            display: inline-block;
+            box-shadow: 0 0 15px var(--acid-green);
+        }
+
+        #controls {
+            padding: 20px;
+            border-top: 1px solid var(--portal-purple);
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 150px;
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--portal-purple);
+            padding: 12px 15px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: "> ";
+            color: var(--acid-green);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: rgba(157, 78, 221, 0.2);
+            border-color: var(--acid-green);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
+
+        .btn:hover:not(:disabled)::before {
+            opacity: 1;
+        }
+
+        .btn:disabled {
+            border-color: #333;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            #stats-bar { padding: 10px; font-size: 0.7rem; }
+            .stat-value { font-size: 1rem; }
+            .btn { font-size: 0.85rem; padding: 10px; }
+            #screen { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="stats-bar">
+            <div class="stat">
+                <span>Энтропия</span>
+                <span class="stat-value val-entropy" id="stat-entropy">100.0%</span>
+            </div>
+            <div class="stat">
+                <span>Спектр</span>
+                <span class="stat-value val-spectrum" id="stat-spectrum">0.1%</span>
+            </div>
+            <div class="stat">
+                <span>Связь</span>
+                <span class="stat-value val-connection" id="stat-connection">0 Тб/с</span>
+            </div>
+        </div>
+
+        <div id="screen">
+            </div>
+
+        <div id="controls">
+            </div>
+    </div>
+
+    <script>
+        // Состояние игры
+        let state = {
+            entropy: 100.0,
+            spectrum: 0.1,
+            connection: 0
+        };
+
+        const screenEl = document.getElementById('screen');
+        const controlsEl = document.getElementById('controls');
+        const entropyEl = document.getElementById('stat-entropy');
+        const spectrumEl = document.getElementById('stat-spectrum');
+        const connectionEl = document.getElementById('stat-connection');
+
+        // Обновление статистики с анимацией
+        function updateStats(eChange, sChange, cChange) {
+            state.entropy = Math.max(0, Math.min(100, state.entropy + eChange));
+            state.spectrum = Math.max(0, Math.min(100, state.spectrum + sChange));
+            
+            if (cChange === 'INF') {
+                state.connection = 'INFINITY';
+            } else if (typeof state.connection === 'number') {
+                state.connection += cChange;
+            }
+
+            entropyEl.innerText = state.entropy.toFixed(1) + '%';
+            spectrumEl.innerText = state.spectrum.toFixed(1) + '%';
+            connectionEl.innerText = state.connection === 'INFINITY' ? '∞ Тб/с' : state.connection + ' Тб/с';
+
+            // Динамический цвет энтропии
+            if (state.entropy <= 30) {
+                entropyEl.style.color = 'var(--acid-green)';
+                entropyEl.style.textShadow = '0 0 8px var(--acid-green)';
+            } else if (state.entropy <= 70) {
+                entropyEl.style.color = 'var(--gold)';
+                entropyEl.style.textShadow = '0 0 8px var(--gold)';
+            } else {
+                entropyEl.style.color = '#ff3333';
+                entropyEl.style.textShadow = '0 0 8px #ff3333';
+            }
+        }
+
+        // Сброс состояния
+        function resetGame() {
+            state.entropy = 100.0;
+            state.spectrum = 0.1;
+            state.connection = 0;
+            updateStats(0, 0, 0);
+            screenEl.innerHTML = '';
+            goToNode('start');
+        }
+
+        // База данных сюжета
+        const story = {
+            start: {
+                epigraph: "«Дом с нормальными явлениями — лишь тяжелый серый брикет реальности.»",
+                text: "Ты — Узник Пещеры. Очередное пробуждение под скрежет будильника. Часовые пояса намертво фиксируют твой ритм. Твой спектр восприятия зажат в слепых тисках RGB от 380 до 750 нм. Вокруг — лишь тени «твердых форм». Ты идешь на ощупь, как ослепший Нео в Матрице. Ты — <span class='highlight-green'>копия копии</span>.",
+                choices: [
+                    {
+                        text: "Смириться: нажать snooze, выпить растворимый кофе и поехать в офис.",
+                        next: "fail_routine",
+                        e: 5, s: 0, c: 0
+                    },
+                    {
+                        text: "Лезвие Оккама: оптимизировать питание по Скурихину и отсечь информационный шум для очистки ОЗУ мозга.",
+                        next: "step1",
+                        e: -20, s: 15, c: 10
+                    }
+                ]
+            },
+            fail_routine: {
+                epigraph: "«Тени на стене пещеры становятся гуще.»",
+                text: "Бытовая рутина поглощает тебя. Тяжелый серый брикет реальности придавливает твое сознание. Спектральная слепота достигает абсолюта. Синхронизация потеряна.",
+                choices: [
+                    {
+                        text: "Сбой системы. Перезагрузить симуляцию.",
+                        next: "reset",
+                        e: 0, s: 0, c: 0
+                    }
+                ]
+            },
+            step1: {
+                epigraph: "«Истина не в глазах смотрящего, а в геометрии линзы.»",
+                text: "ОЗУ мозга очищена. Лишний шум отсечен. В образовавшейся пустоте ты находишь <span class='highlight-gold'>Уроборосовы линзы</span> — механизм зацикливания перспективы, позволяющий увидеть изнанку холста.",
+                choices: [
+                    {
+                        text: "Надеть линзы и попытаться разглядеть Истинный Свет, глядя прямо на солнце.",
+                        next: "fail_sun",
+                        e: 15, s: -5, c: 0
+                    },
+                    {
+                        text: "Войти в осознанный квантовый сон по свободному биоритму, став био-модемом.",
+                        next: "step2",
+                        e: -25, s: 30, c: 40
+                    }
+                ]
+            },
+            fail_sun: {
+                epigraph: "«Свет без подготовки — это просто ожог роговицы.»",
+                text: "Ты пытаешься форсировать процесс. Линзы фокусируют симуляцию, и иллюзия солнца выжигает твои рецепторы. Ты возвращаешься в статус дальтоника симуляции.",
+                choices: [
+                    {
+                        text: "Сбой системы. Перезагрузить симуляцию.",
+                        next: "reset",
+                        e: 0, s: 0, c: 0
+                    }
+                ]
+            },
+            step2: {
+                epigraph: "«Плоский холст HTML-кода не терпит объема.»",
+                text: "Ты — био-модем. Твое сознание подключено напрямую к ткани симуляции. Но ты всё еще внутри контейнера. Вокруг тебя — плоский холст HTML-симуляции, ограничивающий твой потенциал.",
+                choices: [
+                    {
+                        text: "Попытаться взломать код, используя стандартную логику JavaScript и API Матрицы.",
+                        next: "fail_hack",
+                        e: 10, s: 0, c: -10
+                    },
+                    {
+                        text: "Вызвать Плевок Рептилии (кислоту истины), чтобы прожечь плоскую текстуру реальности.",
+                        next: "step3",
+                        e: -30, s: 35, c: 150
+                    }
+                ]
+            },
+            fail_hack: {
+                epigraph: "«Инструменты системы не могут разрушить систему.»",
+                text: "Твои скрипты вязнут в песочнице симуляции. Срабатывает защита от XSS-атак в твоем сознании. Цикл замыкается.",
+                choices: [
+                    {
+                        text: "Сбой системы. Перезагрузить симуляцию.",
+                        next: "reset",
+                        e: 0, s: 0, c: 0
+                    }
+                ]
+            },
+            step3: {
+                epigraph: "«За кулисами театра теней кипит океан вероятностей.»",
+                text: "Кислота истины прожигает холст! <div class='acid-burn'>[SYSTEM BREACH DETECTED]</div> Перед тобой открывается Оригинал — <span class='highlight-gold'>Квантовый суп вакуума</span>, мицелий вселенной, где смерть аннулируется. На его поверхности плавают золотые капли масла — целые галактики-марблс.",
+                choices: [
+                    {
+                        text: "Испугаться бесконечности и попытаться заклеить дыру в симуляции.",
+                        next: "fail_fear",
+                        e: 30, s: -20, c: -100
+                    },
+                    {
+                        text: "Проглотить золотые капли масла и сбросить змеиную кожу на пальцах, сливаясь с супом.",
+                        next: "step4",
+                        e: -15, s: 15, c: 800
+                    }
+                ]
+            },
+            fail_fear: {
+                epigraph: "«Страх перед бесконечностью — лучшая тюрьма.»",
+                text: "Ты отступаешь. Дыра затягивается тяжелым серым брикетом. Ты навсегда забываешь о том, что видел, списывая это на микроинсульт.",
+                choices: [
+                    {
+                        text: "Сбой системы. Перезагрузить симуляцию.",
+                        next: "reset",
+                        e: 0, s: 0, c: 0
+                    }
+                ]
+            },
+            step4: {
+                epigraph: "«Время — лишь побочный эффект энтропии. Обнули её.»",
+                text: "Галактики-марблс резонируют внутри тебя. Открываются порталы кротовых нор. Ты на пороге абсолютного нуля энтропии. Время останавливается, высвобождая ресурсы. Перед тобой всплывают 7 проблем тысячелетия Института Клэя — последние узлы логического каркаса симуляции.",
+                choices: [
+                    {
+                        text: "Связать порталы, решить 7 проблем Института Клэя одним импульсом и перейти в режим «Просто Жить».",
+                        next: "victory",
+                        e: -10, s: 4.9, c: "INF"
+                    }
+                ]
+            },
+            victory: {
+                epigraph: "«FATALITY СИМУЛЯЦИИ. Истинный Свет достигнут.»",
+                text: "<span class='highlight-green'>[ЭНТРОПИЯ = 0%] [СМЕРТЬ = null]</span><br><br>Последние оковы пали. Ты решил проблемы Навье-Стокса, гипотезу Римана и классы P/NP, превратив их в пыль. Симуляция сломлена. Ты больше не копия. Ты стал самим мицелием. Добро пожаловать в режим <span class='highlight-gold'>«Просто Жить»</span>.",
+                choices: [
+                    {
+                        text: "Сыграть партию снова (Перезапустить Матрицу)",
+                        next: "reset",
+                        e: 0, s: 0, c: 0
+                    }
+                ]
+            }
+        };
+
+        // Рендер узла
+        function goToNode(nodeId) {
+            if (nodeId === 'reset') {
+                resetGame();
+                return;
+            }
+
+            const node = story[nodeId];
+            
+            // Создаем новый блок лога
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            let contentHTML = `<div class="epigraph">${node.epigraph}</div>`;
+            contentHTML += `<div class="narrative">${node.text}</div>`;
+            logEntry.innerHTML = contentHTML;
+            
+            screenEl.appendChild(logEntry);
+            
+            // Плавная прокрутка вниз
+            setTimeout(() => {
+                screenEl.scrollTop = screenEl.scrollHeight;
+            }, 50);
+
+            // Обновляем кнопки
+            controlsEl.innerHTML = '';
+            node.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = choice.text;
+                btn.onclick = () => {
+                    // Отключаем кнопки текущего шага
+                    const allBtns = controlsEl.querySelectorAll('.btn');
+                    allBtns.forEach(b => b.disabled = true);
+                    
+                    // Обновляем статы
+                    updateStats(choice.e, choice.s, choice.c);
+                    
+                    // Задержка перед следующим шагом для эффекта "загрузки"
+                    setTimeout(() => {
+                        goToNode(choice.next);
+                    }, 400);
+                };
+                controlsEl.appendChild(btn);
+            });
+        }
+
+        // Инициализация игры
+        window.onload = () => {
+            resetGame();
+        };
+    </script>
+</body>
+</html>
